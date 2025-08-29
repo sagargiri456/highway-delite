@@ -1,9 +1,18 @@
-const express = require('express');
+import express from 'express';
+import {
+  registerUser,
+  sendOtp,
+  verifyOtp,
+  loginUser
+} from '../controllers/authControllers';
+import { handleValidation, validateLogin, validateRegister, validateSendOtp, validateVerifyOtp } from '../middleware/validators';
+import { otpLimiter } from '../middleware/rateLimiters';
+
 const router = express.Router();
 
-// Basic route for testing
-router.get('/test', (req: any, res: any) => {
-  res.json({ message: 'Auth routes working' });
-});
+router.post('/register', validateRegister, handleValidation, registerUser);
+router.post('/send-otp', otpLimiter, validateSendOtp, handleValidation, sendOtp);
+router.post('/verify-otp', validateVerifyOtp, handleValidation, verifyOtp);
+router.post('/login', otpLimiter, validateLogin, handleValidation, loginUser);
 
-module.exports = router;
+export default router;
