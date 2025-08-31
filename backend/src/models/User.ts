@@ -9,6 +9,9 @@ export interface Iuser extends Document{
     otp?: string;
     otpExpires?: Date;
     role?: 'user' | 'admin';
+    googleId?: string;
+    profilePicture?: string;
+    authProvider?: 'email' | 'google';
 }
 
 const UserSchema: Schema<Iuser> = new Schema(
@@ -20,7 +23,10 @@ const UserSchema: Schema<Iuser> = new Schema(
         isVerified: { type: Boolean, default: false },
         otp: { type: String },
         otpExpires: { type: Date },
-        role: { type: String, enum: ['user', 'admin'], default: 'user' }
+        role: { type: String, enum: ['user', 'admin'], default: 'user' },
+        googleId: { type: String, sparse: true }, // sparse index for optional field
+        profilePicture: { type: String },
+        authProvider: { type: String, enum: ['email', 'google'], default: 'email' }
     },
     { 
         timestamps: true 

@@ -5,6 +5,8 @@ export interface User {
     dateOfBirth: string;
     isVerified: boolean;
     token?: string;
+    profilePicture?: string;
+    authProvider?: 'email' | 'google';
   }
   
   export interface AuthState {
@@ -18,5 +20,6 @@ export interface User {
     signup: (data: { name: string; dob: string; email: string }) => Promise<void>;
     verifyOtp: (email: string, otp: string) => Promise<void>;
     logout: () => void;
+    googleSignIn: (idToken: string) => Promise<void>;
   }
   

@@ -9,6 +9,7 @@ import {
   logoutUser,
   getCurrentUser
 } from '../controllers/authControllers';
+import { googleSignIn } from '../controllers/googleAuthController';
 import { handleValidation, validateLogin, validateRegister, validateSendOtp, validateVerifyOtp } from '../middleware/validators';
 import { otpLimiter } from '../middleware/rateLimiters';
 import { authenticate } from '../middleware/auth';
@@ -20,6 +21,7 @@ router.post('/send-otp', otpLimiter, validateSendOtp, handleValidation, sendOtp)
 router.post('/send-login-otp', otpLimiter, validateSendOtp, handleValidation, sendLoginOtp);
 router.post('/verify-otp', validateVerifyOtp, handleValidation, verifyOtp);
 router.post('/login', otpLimiter, validateLogin, handleValidation, verifyOtpAndLogin);
+router.post('/google', googleSignIn);
 router.get('/me', authenticate, getCurrentUser);
 router.post('/refresh', refreshAccessToken);
 router.post('/logout', logoutUser);

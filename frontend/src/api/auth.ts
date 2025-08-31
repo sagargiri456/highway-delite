@@ -152,3 +152,37 @@ export const loginApi = async (email: string, otp: string): Promise<User> => {
     token: token,
   };
 };
+
+// Google OAuth API
+export const googleSignInApi = async (idToken: string): Promise<User> => {
+  const response = await fetch(`${API_BASE_URL}/auth/google`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ idToken }),
+  });
+
+  const result = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(result.message || 'Google sign-in failed');
+  }
+
+  // Store token in localStorage
+  const token = result.accessToken;
+  if (token) {
+    localStorage.setItem('token', token);
+  }
+
+  // Return user object
+  return {
+    name: result.user?.name || '',
+    email: result.user?.email || '',
+    dateOfBirth: result.user?.dateOfBirth || '',
+    isVerified: result.user?.isVerified || true,
+    token: token,
+    profilePicture: result.user?.profilePicture,
+    authProvider: result.user?.authProvider || 'google',
+  };
+};

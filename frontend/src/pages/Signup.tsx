@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { validateForm, getFieldError, type ValidationError } from '../utils/validation';
 import { useCountdown } from '../hooks/useCountdown';
 import { sendOtp } from '../api/auth';
+import GoogleSignInButton from '../components/ui/GoogleSignInButton';
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ function Signup() {
   const [otpMessage, setOtpMessage] = useState<string>('');
   const [isResendingOtp, setIsResendingOtp] = useState(false);
   
-  const { signup, verifyOtp, loading, error } = useAuth();
+  const { signup, verifyOtp, loading, error, googleSignIn } = useAuth();
   const navigate = useNavigate();
   const { countdown, isActive, startCountdown, restartCountdown } = useCountdown(60);
 
@@ -232,6 +233,32 @@ function Signup() {
                 Get OTP
               </Button>
             )}
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign-In Button */}
+            <GoogleSignInButton
+              onSuccess={async (response) => {
+                try {
+                  await googleSignIn(response.access_token);
+                  navigate('/dashboard');
+                } catch (error) {
+                  console.error('Google sign-in error:', error);
+                }
+              }}
+              onError={(error) => {
+                console.error('Google sign-in error:', error);
+              }}
+              disabled={loading}
+            />
           </form>
 
           {/* Footer Link */}

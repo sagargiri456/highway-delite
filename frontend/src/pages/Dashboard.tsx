@@ -10,7 +10,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useAuth } from '../context/authContext';
 import { useToast } from '../context/toastContext';
 import { useNavigate } from 'react-router-dom';
-import { notesApi, type Note, type CreateNoteData, type UpdateNoteData } from '../api/notes';
+import { notesApi, type Note, type CreateNoteData } from '../api/notes';
 
 interface LocalNote extends Omit<Note, '_id' | 'createdAt' | 'updatedAt'> {
   id: string;

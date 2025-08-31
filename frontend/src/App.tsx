@@ -5,30 +5,33 @@ import { ToastProvider } from './context/toastContext';
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Navigate to="/signup" replace />} />
-            <Route 
-              path="/signup" 
-              element={<PublicRoute><Signup /></PublicRoute>} 
-            />
-            <Route 
-              path="/signin" 
-              element={<PublicRoute><Signin /></PublicRoute>} 
-            />
-            <Route 
-              path="/dashboard" 
-              element={<ProtectedRoute><Dashboard /></ProtectedRoute>} 
-            />
-          </Routes>
-        </Router>
-      </ToastProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your-google-client-id'}>
+      <AuthProvider>
+        <ToastProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Navigate to="/signup" replace />} />
+              <Route 
+                path="/signup" 
+                element={<PublicRoute><Signup /></PublicRoute>} 
+              />
+              <Route 
+                path="/signin" 
+                element={<PublicRoute><Signin /></PublicRoute>} 
+              />
+              <Route 
+                path="/dashboard" 
+                element={<ProtectedRoute><Dashboard /></ProtectedRoute>} 
+              />
+            </Routes>
+          </Router>
+        </ToastProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { sendOtp } from '../api/auth';
 import { validateEmail, validateOtp } from '../utils/validation';
 import { useCountdown } from '../hooks/useCountdown';
+import SplitScreen from '../layouts/SplitScreen';
+import GoogleSignInButton from '../components/ui/GoogleSignInButton';
 
 const Signin = () => {
     const [formData, setFormData] = useState({
@@ -19,9 +21,9 @@ const Signin = () => {
     const [validationErrors, setValidationErrors] = useState<{ field: string; message: string }[]>([]);
     const [isResendingOtp, setIsResendingOtp] = useState(false);
     
-    const { login, loading, error } = useAuth();
+    const { login, loading, error, googleSignIn } = useAuth();
     const navigate = useNavigate();
-    const { countdown, isActive, startCountdown, resetCountdown } = useCountdown(60);
+    const { countdown, isActive, startCountdown } = useCountdown(60);
 
     // Start countdown when OTP is first sent
     useEffect(() => {
@@ -204,6 +206,32 @@ const Signin = () => {
                 >
                   {showOtpInput ? 'Sign in' : 'Get OTP'}
                 </Button>
+
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  </div>
+                </div>
+
+                {/* Google Sign-In Button */}
+                <GoogleSignInButton
+                  onSuccess={async (response) => {
+                    try {
+                      await googleSignIn(response.access_token);
+                      navigate('/dashboard');
+                    } catch (error) {
+                      console.error('Google sign-in error:', error);
+                    }
+                  }}
+                  onError={(error) => {
+                    console.error('Google sign-in error:', error);
+                  }}
+                  disabled={loading}
+                />
               </form>
     
               {/* Footer Link */}

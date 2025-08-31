@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../types/authtypes';
-import { sendOtp, sendLoginOtp, verifyOtpApi, loginApi, signupApi, getCurrentUser } from '../api/auth';
+import { sendOtp, verifyOtpApi, loginApi, signupApi, getCurrentUser, googleSignInApi } from '../api/auth';
 
 // Create the context
 const AuthContext = createContext<any>(undefined);
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setError(null);
     
     try {
-      await sendLoginOtp(email);
+      await sendOtp(email);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -85,6 +85,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const loggedInUser = await loginApi(email, otp);
       setUser(loggedInUser);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google Sign-in function
+  const googleSignIn = async (idToken: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const googleUser = await googleSignInApi(idToken);
+      setUser(googleUser);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -108,6 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     sendLoginOtp,
     verifyOtp,
     login,
+    googleSignIn,
     logout
   };
 
