@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { sendOtp } from '../api/auth';
 import { validateEmail, validateOtp } from '../utils/validation';
 import { useCountdown } from '../hooks/useCountdown';
-import SplitScreen from '../layouts/SplitScreen';
 import GoogleSignInButton from '../components/ui/GoogleSignInButton';
 
 const Signin = () => {
@@ -219,19 +218,19 @@ const Signin = () => {
 
                 {/* Google Sign-In Button */}
                 <GoogleSignInButton
-                  onSuccess={async (response) => {
-                    try {
-                      await googleSignIn(response.access_token);
-                      navigate('/dashboard');
-                    } catch (error) {
-                      console.error('Google sign-in error:', error);
-                    }
-                  }}
-                  onError={(error) => {
-                    console.error('Google sign-in error:', error);
-                  }}
-                  disabled={loading}
-                />
+  onSuccess={async (response) => {
+    try {
+      await googleSignIn(response.credential);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+    }
+  }}
+  onError={() => {  // ✅ No error parameter
+    console.error('Google sign-in failed');
+  }}
+  disabled={loading}
+/>
               </form>
     
               {/* Footer Link */}

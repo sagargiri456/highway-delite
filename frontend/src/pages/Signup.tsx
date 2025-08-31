@@ -246,19 +246,19 @@ function Signup() {
 
             {/* Google Sign-In Button */}
             <GoogleSignInButton
-              onSuccess={async (response) => {
-                try {
-                  await googleSignIn(response.access_token);
-                  navigate('/dashboard');
-                } catch (error) {
-                  console.error('Google sign-in error:', error);
-                }
-              }}
-              onError={(error) => {
-                console.error('Google sign-in error:', error);
-              }}
-              disabled={loading}
-            />
+  onSuccess={async (response) => {
+    try {
+      await googleSignIn(response.credential); // ✅ Use credential instead of access_token
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+    }
+  }}
+  onError={() => { // ✅ Remove error parameter
+    console.error('Google sign-in error');
+  }}
+  disabled={loading}
+/>
           </form>
 
           {/* Footer Link */}
