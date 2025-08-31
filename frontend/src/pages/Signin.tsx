@@ -1,21 +1,126 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import BlueGradient from '../components/ui/BlueGradient';
 import FormInput from '../components/ui/FormInput';
+import ErrorMessage from '../components/ui/ErrorMessage';
+import Button from '../components/ui/Button';
+import { useAuth } from '../context/authContext';
+import { useNavigate } from 'react-router-dom';
+import { sendOtp } from '../api/auth';
+import { validateEmail, validateOtp } from '../utils/validation';
+import { useCountdown } from '../hooks/useCountdown';
 
 const Signin = () => {
     const [formData, setFormData] = useState({
-        email: 'jonas_kahnwald@gmail.com',
-        otp: '111111'
+        email: '',
+        otp: ''
       });
-      const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [showOtpInput, setShowOtpInput] = useState(false);
+    const [otpMessage, setOtpMessage] = useState('');
+    const [validationErrors, setValidationErrors] = useState<{ field: string; message: string }[]>([]);
+    const [isResendingOtp, setIsResendingOtp] = useState(false);
+    
+    const { login, loading, error } = useAuth();
+    const navigate = useNavigate();
+    const { countdown, isActive, startCountdown, resetCountdown } = useCountdown(60);
+
+    // Start countdown when OTP is first sent
+    useEffect(() => {
+      if (showOtpInput && !isActive) {
+        startCountdown();
+      }
+    }, [showOtpInput, isActive, startCountdown]);
+
+    const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
         setFormData(prev => ({
           ...prev,
-          [field]: e.target.value
+          [field]: value
         }));
-      };
-      return (
+
+        // Clear validation error for this field when user starts typing
+        setValidationErrors(prev => prev.filter(err => err.field !== field));
+    };
+
+    const validateCurrentForm = () => {
+      const errors: { field: string; message: string }[] = [];
+      
+      if (showOtpInput) {
+        const emailError = validateEmail(formData.email);
+        const otpError = validateOtp(formData.otp);
+        
+        if (emailError) errors.push({ field: 'email', message: emailError });
+        if (otpError) errors.push({ field: 'otp', message: otpError });
+      } else {
+        const emailError = validateEmail(formData.email);
+        if (emailError) errors.push({ field: 'email', message: emailError });
+      }
+      
+      setValidationErrors(errors);
+      return errors.length === 0;
+    };
+
+    const getFieldError = (field: string): string | null => {
+      const error = validationErrors.find(err => err.field === field);
+      return error ? error.message : null;
+    };
+
+    const handleSendOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!validateCurrentForm()) {
+          return;
+        }
+
+        try {
+            await sendOtp(formData.email);
+            setShowOtpInput(true);
+            setOtpMessage('OTP sent to your email!');
+            setValidationErrors([]);
+        } catch (error) {
+            setOtpMessage(error instanceof Error ? error.message : 'Failed to send OTP');
+        }
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!validateCurrentForm()) {
+          return;
+        }
+
+        try {
+            await login(formData.email, formData.otp);
+            navigate('/dashboard');
+        } catch (error) {
+            setOtpMessage(error instanceof Error ? error.message : 'Login failed');
+        }
+    };
+
+    const handleResendOtp = async () => {
+      if (isActive) return;
+      
+      setIsResendingOtp(true);
+      try {
+        await sendOtp(formData.email);
+        setOtpMessage('OTP resent to your email!');
+        startCountdown();
+        setValidationErrors([]);
+      } catch (error) {
+        setOtpMessage(error instanceof Error ? error.message : 'Failed to resend OTP');
+      } finally {
+        setIsResendingOtp(false);
+      }
+    };
+
+    const formatCountdown = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    return (
         <div className="min-h-screen flex">
-          {/* Left Section - Sign Up Form */}
+          {/* Left Section - Sign In Form */}
                      <div className="w-full md:w-1/2 bg-white p-8 flex flex-col text-center md:text-left">
             {/* Header with Logo */}
             <div className="flex items-center mb-8">
@@ -27,42 +132,86 @@ const Signin = () => {
             <div className="flex-1 flex items-center flex-col justify-center max-w-md">
               {/* Title Section */}
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Sign up</h1>
-                <p className="text-gray-600">Sign up to enjoy the feature of HD</p>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Sign in</h1>
+                <p className="text-gray-600">Sign in to enjoy the features of HD</p>
               </div>
+
+              {/* Success/Error Messages */}
+              {otpMessage && (
+                <ErrorMessage 
+                  message={otpMessage} 
+                  type={otpMessage.includes('sent') || otpMessage.includes('resent') ? 'success' : 'error'}
+                  className="mb-4"
+                />
+              )}
+              
+              {error && (
+                <ErrorMessage message={error} type="error" className="mb-4" />
+              )}
     
               {/* Form */}
-              <form  className="space-y-6">
+              <form onSubmit={showOtpInput ? handleLogin : handleSendOtp} className="space-y-6 w-full">
                 {/* Email Field */}
                 <FormInput
                   label="Email"
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange('email')}
+                  placeholder="Enter your email address"
+                  error={getFieldError('email')}
                 />
-                {/* Otp Field */}
-                <FormInput
-                  label="Otp"
-                  type="text"
-                  value={formData.email}
-                  onChange={handleInputChange('otp')}
-                />
+                
+                {/* OTP Field */}
+                {showOtpInput && (
+                  <div className="space-y-4">
+                    <FormInput
+                      label="OTP"
+                      type="text"
+                      value={formData.otp}
+                      onChange={handleInputChange('otp')}
+                      placeholder="Enter 6-digit OTP"
+                      error={getFieldError('otp')}
+                    />
+                    
+                    {/* Resend OTP Section */}
+                    <div className="flex items-center justify-between">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleResendOtp}
+                        disabled={isActive}
+                        loading={isResendingOtp}
+                        className="w-auto"
+                      >
+                        Resend OTP
+                      </Button>
+                      
+                      {isActive && (
+                        <span className="text-sm text-gray-500">
+                          Resend in {formatCountdown(countdown)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
     
                 {/* Submit Button */}
-                <button
+                <Button
                   type="submit"
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200"
+                  loading={loading}
+                  disabled={loading}
                 >
-                  Get OTP
-                </button>
+                  {showOtpInput ? 'Sign in' : 'Get OTP'}
+                </Button>
               </form>
     
               {/* Footer Link */}
               <div className="mt-8 text-center">
                 <p className="text-gray-600">
-                  Already have an account??{' '}
-                  <a href="#" className="text-blue-600 font-medium hover:underline">
-                    Sign in
+                  Don't have an account?{' '}
+                  <a href="/signup" className="text-blue-600 font-medium hover:underline">
+                    Sign up
                   </a>
                 </p>
               </div>

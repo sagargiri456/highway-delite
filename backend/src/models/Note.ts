@@ -11,7 +11,7 @@ export interface Inote extends Document{
 const NoteSchema:Schema<Inote> = new Schema(
     {
         title:{type:String,required:true},
-        content:{type:String,required:true},
+        content:{type:String,required:false},
         userId:{type:Schema.Types.ObjectId,ref:'User',required:true}
     },
     {timestamps:true}

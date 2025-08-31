@@ -5,7 +5,7 @@ interface Props {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     placeholder?: string;
-    error?: string;
+    error?: string | null;
   }
 
   export default function FormInput({ label, type = "text", value, onChange, placeholder, error }: Props) {

@@ -8,6 +8,7 @@ export interface Iuser extends Document{
     isVerified: boolean;
     otp?: string;
     otpExpires?: Date;
+    role?: 'user' | 'admin';
 }
 
 const UserSchema: Schema<Iuser> = new Schema(
@@ -18,7 +19,8 @@ const UserSchema: Schema<Iuser> = new Schema(
         password: { type: String }, // optional for OTP-only flow
         isVerified: { type: Boolean, default: false },
         otp: { type: String },
-        otpExpires: { type: Date }
+        otpExpires: { type: Date },
+        role: { type: String, enum: ['user', 'admin'], default: 'user' }
     },
     { 
         timestamps: true 

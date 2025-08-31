@@ -29,3 +29,67 @@ export const validateVerifyOtp = [
 export const validateLogin = [
   body('email').isString().trim().isEmail().normalizeEmail()
 ];
+
+export const validateNoteInput: RequestHandler = (req, res, next) => {
+  const { title, content } = req.body;
+
+  // Check if title is provided and not empty
+  if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    return res.status(400).json({ 
+      message: 'Title is required and cannot be empty',
+      field: 'title'
+    });
+  }
+
+  // Check if title is not too long (optional validation)
+  if (title.trim().length > 100) {
+    return res.status(400).json({ 
+      message: 'Title cannot exceed 100 characters',
+      field: 'title'
+    });
+  }
+
+  // Check if content is a string if provided
+  if (content !== undefined && typeof content !== 'string') {
+    return res.status(400).json({ 
+      message: 'Content must be a string',
+      field: 'content'
+    });
+  }
+
+  // Check if content is not too long (optional validation)
+  if (content && content.length > 10000) {
+    return res.status(400).json({ 
+      message: 'Content cannot exceed 10000 characters',
+      field: 'content'
+    });
+  }
+
+  // Sanitize the input
+  req.body.title = title.trim();
+  req.body.content = content ? content.trim() : '';
+
+  next();
+};
+
+export const validateNoteId: RequestHandler = (req, res, next) => {
+  const { id } = req.params;
+  
+  // Check if id exists and is a valid MongoDB ObjectId
+  if (!id || typeof id !== 'string') {
+    return res.status(400).json({ 
+      message: 'Note ID is required',
+      field: 'id'
+    });
+  }
+  
+  const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+  if (!objectIdRegex.test(id)) {
+    return res.status(400).json({ 
+      message: 'Invalid note ID format',
+      field: 'id'
+    });
+  }
+
+  next();
+};

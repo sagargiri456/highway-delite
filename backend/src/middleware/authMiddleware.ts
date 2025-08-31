@@ -30,7 +30,10 @@ export const verifyToken: RequestHandler = async (req, res, next) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    (req as any).user = { id: user.id };
+    (req as any).user = { 
+      id: user.id,
+      userId: user.id // Add userId for compatibility
+    };
     return next();
   } catch (err) {
     return res.status(403).json({ message: 'Token verification failed', error: err });
