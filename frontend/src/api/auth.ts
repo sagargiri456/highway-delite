@@ -1,6 +1,6 @@
 import type { User } from '../types/authtypes';
 
-const API_BASE_URL = "https://highway-delite-backend-gjt3.onrender.com/api";
+const API_BASE_URL = "http://localhost:5000/api" ;
 
 // Signup API - registers user and sends OTP
 export const signupApi = async (data: { name: string; dob: string; email: string }) => {
